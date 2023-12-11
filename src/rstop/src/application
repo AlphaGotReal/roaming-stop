@@ -1,0 +1,63 @@
+#! /usr/bin/python3
+
+import os
+import time
+import numpy as np
+
+import socket
+import flask
+import requests
+import threading
+
+import rospy
+from geometry_msgs.msg import Twist
+
+#public_ip = requests.get("https://api.ipify.org/").text
+ip = socket.gethostbyname(socket.gethostname())
+port = 6969
+
+web = flask.Flask(__name__)
+stop = False
+
+@web.route("/", methods=["GET", "POST"])
+def host():
+    global stop
+    if (flask.request.method == "POST"):
+        stop = True
+    return flask.render_template("index.html")
+
+class app():
+
+    def __init__(self, name):
+        rospy.init_node(name)
+        
+        self.velocity = Twist()
+        self.velocity.linear.x = 0
+        self.velocity.angular.z = 0
+
+        self.pub = rospy.Publisher("/cmd_vel", Twist, queue_size=1)
+
+    def run(self):
+        rate = rospy.Rate(20)
+        while True:
+            try:
+                if (stop):
+                    self.pub.publish(self.velocity)
+                    rate.sleep()
+                    continue
+            except KeyboardInterrupt:
+                os.sys.exit(1)
+
+try:
+    threading.Thread(target=web.run, 
+            kwargs= {"use_reloader": False, 
+                "debug": True, 
+                "host": ip, 
+                "port": port}).start()
+
+except Exception as e:
+    print(f"{type(e)}: {e}")
+    os.sys.exit(1)
+
+app("test").run()
+

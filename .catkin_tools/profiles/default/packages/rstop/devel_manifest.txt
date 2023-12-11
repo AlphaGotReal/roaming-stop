@@ -1,0 +1,5 @@
+rstop
+/home/straw/Documents/roaming_stop/devel/.private/rstop/cmake.lock /home/straw/Documents/roaming_stop/devel/./cmake.lock
+/home/straw/Documents/roaming_stop/devel/.private/rstop/share/rstop/cmake/rstopConfig-version.cmake /home/straw/Documents/roaming_stop/devel/share/rstop/cmake/rstopConfig-version.cmake
+/home/straw/Documents/roaming_stop/devel/.private/rstop/share/rstop/cmake/rstopConfig.cmake /home/straw/Documents/roaming_stop/devel/share/rstop/cmake/rstopConfig.cmake
+/home/straw/Documents/roaming_stop/devel/.private/rstop/lib/pkgconfig/rstop.pc /home/straw/Documents/roaming_stop/devel/lib/pkgconfig/rstop.pc

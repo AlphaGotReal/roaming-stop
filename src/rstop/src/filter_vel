@@ -1,0 +1,135 @@
+#! /usr/bin/python3
+
+import os
+import time
+import numpy as np
+
+import threading
+import socket
+
+import rospy
+from geometry_msgs.msg import Twist
+
+class filter_vel():
+
+    # port takes values from 1 to 60000 and must not be in use
+    # packet_type 0: tcp type packet
+    # packet_type 1: udp type packet
+
+    def __init__(self, port:int, packet_type:int): 
+
+        #####socket init##########
+        packet_t = [socket.SOCK_STREAM, socket.SOCK_DGRAM][packet_type]
+        
+        self.sock = socket.socket(socket.AF_INET, packet_t)
+        self.host_name = socket.gethostname()
+
+        self.ip = socket.gethostbyname(self.host_name)
+        self.port = port
+
+        self.address = (self.ip, self.port)
+        try:
+            self.sock.bind(self.address)
+            print(f"server bind on '{self.ip}:{self.port}' success")
+
+        except socket.gaierror as e:
+            print(f"{type(e)}: {e}")
+            print(f"{self.ip} seems to be incorrect or changed")
+
+        except PermissionError as e:
+            print(f"{type(e)}: {e}")
+        ##########################
+
+        #####ros client init######
+        rospy.init_node("filter_vel", anonymous=False)
+
+        self.safe_vel_pub = rospy.Publisher("/safe_vel", Twist, queue_size=1)
+        self.cmd_vel_sub = rospy.Subscriber("/cmd_vel", Twist, self.get_cmd_vel, queue_size=1)
+        
+        self.velocity = Twist()
+        ##########################
+
+        #####params###############
+        self.max_linear_vel = 0.7
+        self.min_linear_vel = -0.3
+
+        self.max_angular_vel = 0.5
+        self.min_angular_vel = -0.5
+        
+        self.roam_signal = False
+        self.end = False
+        ##########################
+
+    def generate_filtered_velocity(self, cmd_vel:Twist):
+
+        # safe velocity is the velocity constrained within the ranges setup above
+        # safe velocity is set to zero if the roaming stop signal is recieved
+        safe_vel = Twist()
+
+        if (self.roam_signal):
+            
+            safe_vel.linear.x = 0
+            safe_vel.angular.z = 0
+            
+            return safe_vel
+
+        safe_vel.linear.x = max(cmd_vel.linear.x, self.min_linear_vel)
+        safe_vel.linear.x = min(safe_vel.linear.x, self.max_linear_vel)
+
+        safe_vel.angular.z = max(cmd_vel.angular.z, self.min_angular_vel)
+        safe_vel.angular.z = min(safe_vel.angular.z, self.max_angular_vel)
+
+        return safe_vel
+
+    def get_cmd_vel(self, data:Twist):
+        self.velocity = data
+
+    def start_server(self):
+
+        self.sock.listen()
+        print(f"server is listening for roaming stop signals.....")
+
+        while not self.end:
+            
+            try:
+                client_socket, client_address = self.sock.accept()
+                print(f"[{client_address[0]}:{client_address[1]}]: connected")
+
+                signal = client_socket.recv(1024)
+                if signal:
+                    data = signal.decode("utf-8")
+                    print(f"[{client_address[0]}:{client_address[1]}]: {data}")
+                    if ("STOP" in data):
+                        self.end = True
+                        self.roam_signal = True
+
+            except KeyboardInterrupt:
+                self.end = True
+                self.roam_signal = True
+        
+        self.sock.close()
+
+    def run(self):
+
+        thread = threading.Thread(target=self.start_server)
+        thread.start();
+
+        rate = rospy.Rate(30)
+        while not rospy.is_shutdown():
+
+            safe_vel = self.generate_filtered_velocity(self.velocity)
+            self.safe_vel_pub.publish(safe_vel)
+
+            print(safe_vel.linear.x, safe_vel.angular.z, self.roam_signal)
+
+            rate.sleep()
+
+if __name__ == "__main__":
+
+    port = int(os.sys.argv[1])
+    packet_type = int(os.sys.argv[2])
+    
+    node = filter_vel(port, packet_type)
+    node.run()
+
+

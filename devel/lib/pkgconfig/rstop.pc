@@ -1,0 +1,1 @@
+/home/straw/Documents/roaming_stop/devel/.private/rstop/lib/pkgconfig/rstop.pc
