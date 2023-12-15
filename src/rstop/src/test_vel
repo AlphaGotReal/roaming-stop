@@ -1,0 +1,21 @@
+#! /usr/bin/python3
+
+import sys
+import rospy
+from geometry_msgs.msg import Twist
+
+rospy.init_node("test_vel")
+
+pub = rospy.Publisher("/cmd_vel", Twist, queue_size=1)
+
+v = Twist()
+v.linear.x = float(sys.argv[1])
+v.angular.z = float(sys.argv[2])
+
+rate = rospy.Rate(20)
+while not rospy.is_shutdown():
+
+    pub.publish(v)
+    rate.sleep()
+
+

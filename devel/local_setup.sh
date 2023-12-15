@@ -1,1 +1,0 @@
-/home/straw/Documents/roaming_stop/devel/.private/catkin_tools_prebuild/local_setup.sh

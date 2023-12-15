@@ -1,0 +1,68 @@
+#! /usr/bin/python3
+
+import rospy
+from geometry_msgs.msg import Twist
+from nav_msgs.msg import Odometry
+from std_msgs.msg import Float64
+
+rospy.init_node("calculate")
+
+enc_vel_tm1 = 0.0
+enc_vel_tm2 = 0.0
+enc_pos_tm1 = 0.0
+enc_pos_tm2 = 0.0
+
+start = False
+vel = Twist()
+
+def enc_tm1_callback(data):
+    global enc_vel_tm1
+    enc_vel_tm1 = data.data
+
+def enc_tm2_callback(data):
+    global enc_vel_tm2
+    enc_vel_tm2 = data.data
+    
+def enc_pos_tm1_callback(data):
+    global enc_pos_tm1
+    enc_pos_tm1 = data.data
+    
+def enc_pos_tm2_callback(data):
+    global enc_pos_tm2
+    enc_pos_tm2 = data.data
+
+def vel_callback(data):
+    global vel, start
+    start = True
+    vel = data
+
+rospy.Subscriber('encoder_vel_tm1', Float64, enc_tm1_callback)
+rospy.Subscriber('encoder_vel_tm2', Float64, enc_tm2_callback)
+rospy.Subscriber('encoder_pos_tm1', Float64, enc_pos_tm1_callback)
+rospy.Subscriber('encoder_pos_tm2', Float64, enc_pos_tm2_callback)
+
+rospy.Subscriber("/cmd_vel", Twist, vel_callback)
+
+queue1 = []
+queue2 = []
+
+rate = rospy.Rate(3)
+
+while not rospy.is_shutdown():
+    if (not start):
+        continue
+
+    ratio1 = vel.linear.x / enc_vel_tm1
+    ratio2 = vel.linear.x / enc_vel_tm2
+
+    print(f"{ratio1}\t\t{ratio2}", end='\t')
+    queue1.append(ratio1)
+    queue2.append(ratio2)
+    print(f"avg = {sum(queue1)/len(queue1)} {sum(queue2)/len(queue2)}")
+
+    if (len(queue1) > 50):
+        queue1 = queue1[1:]
+        queue2 = queue2[1:]
+
+    rate.sleep()
+

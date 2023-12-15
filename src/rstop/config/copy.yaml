@@ -1,0 +1,163 @@
+# move_base configuration parameters
+
+use_amcl: false
+
+# The base frame of the robot
+robot_base_frame: "base_link"
+
+# The global frame used for planning
+global_frame: "map"
+
+# The name of the topic to publish navigation goals
+# goal_topic: "move_base_simple/goal"
+goal_topic: "/move_base_simple/goal"
+
+# Planner parameters
+# base_global_planner: "navfn/NavfnROS"
+base_global_planner: "global_planner/GlobalPlanner" 
+
+# Global Planner Parameters
+GlobalPlanner:
+  allow_unknown: true
+  default_tolerance: 1.0
+  force_reinit_new_goal_dist: 0
+  orientation_mode: 1
+  planner_frequency: 10.0
+  potential_scale: 0.1
+  publish_potential: false
+  use_dijkstra: true
+  use_grid_path: true
+  use_quadratic: true
+
+# Navigation planner
+base_local_planner: "base_local_planner/TrajectoryPlannerROS"
+# base_local_planner: "teb_local_planner/TebLocalPlannerROS"
+# base_local_planner: "dwa_local_planner/TebLocalPlannerROS"
+
+map_type: "costmap"
+# observation_sources: "scan"
+# scan: {sensor_frame: "base_scan_link", data_type: "LaserScan", topic: "scan", marking: true, clearing: true}
+
+#Local Planner Parameters
+TrajectoryPlannerROS:
+  acc_lim_x: 2.5
+  acc_lim_theta: 3.2
+  max_vel_x: 1
+  min_vel_x: 0.3
+  max_vel_theta: 0.5
+  min_vel_theta: -0.5
+  holonomic_robot: false
+  sim_time: 1.0
+  footprint: [[0.3, -0.15], [0.3, 0.15], [-0.3, 0.15], [-0.3, -0.15]]
+  robot_radius: 0.5
+  planner_frequency: 10.0
+  max_global_plan_lookahead_dist: 10
+
+# TEB Local Planner Configuration
+TebLocalPlannerROS:
+  # Robot Configuration
+  odom_topic: odom
+  map_frame: map
+  robot_base_frame: base_link
+  global_frame: odom
+
+  # Velocity Limits
+  max_vel_x: 0.5       # Maximum linear velocity of the robot
+  min_vel_x: 0.1       # Minimum linear velocity of the robot
+  max_vel_theta: 0.5  # Maximum angular velocity of the robot
+  min_vel_theta: 0.0   # Minimum angular velocity of the robot
+
+  # Acceleration Limits
+  acc_lim_x: 0.5       # Maximum linear acceleration of the robot
+  acc_lim_theta: 1.0   # Maximum angular acceleration of the robot
+
+  # Goal Tolerances
+  xy_goal_tolerance: 0.2    # Tolerance in the x and y dimensions for reaching the goal
+  yaw_goal_tolerance: 0.1   # Tolerance in the yaw angle for reaching the goal
+
+  # Planning Behavior
+  local_plan_inplace: true     # If true, the planner will try to optimize the path in place
+  allow_init_with_backwards_motion: true   # If true, the planner can initialize with a backwards motion
+
+  # Trajectory Sampling
+  trajectory_min_samples: 3       # Minimum number of samples in the trajectory
+  trajectory_sampling_dist: 0.2   # Distance between trajectory samples
+  trajectory_min_sampling_dist: 0.1   # Minimum distance between trajectory samples
+
+  # Trajectory Auto-Resizing
+  teb_autosize: false   # If true, the planner will automatically resize the trajectory
+  dt_ref: 0.2           # Time step for the reference trajectory
+  dt_hysteresis: 0.1   # Time hysteresis for automatic resizing
+
+  # Trajectory Decomposition
+  min_samples: 5      # Minimum number of samples for trajectory decomposition
+  max_samples: 10    # Maximum number of samples for trajectory decomposition
+
+  footprint: [[0.3, -0.15], [0.3, 0.15], [-0.3, 0.15], [-0.3, -0.15]]
+  robot_radius: 1.0
+  # include_costmap_obstacles: true
+  # trajectory_time_padding: 2.0
+  # min_obstacle_dist: 0.5
+  # obstacle_heading_threshold: 0.45
+  # inflation_dist: 0.2
+  # weight_obstacle: 50
+  max_global_plan_lookahead_dist: 10
+
+# Costmap Parameters
+local_costmap:
+  global_frame: "odom"
+  robot_base_frame: "base_link"
+  update_frequency: 5.0
+  publish_frequency: 10.0
+  static_map: true
+  make_plan_clear_costmap: false
+
+  width: 10
+  height: 10
+  
+  resolution: 0.05
+  rolling_window: true
+
+  inflation_radius: 0.1
+
+global_costmap:
+  map_topic: "map"
+  global_frame: "map"
+  robot_base_frame: "base_link"
+  update_frequency: 5.0
+  publish_frequency: 10.0
+  static_map: true
+  inflation_radius: 0.5
+
+# Trajectory Rollout Parameters
+# TrajectoryPlanner:
+#   holonomic_robot: false
+#   acc_lim_x: 3
+#   acc_lim_y: 3
+#   acc_lim_theta: 2.5
+#   max_vel_x: 1.5
+#   min_vel_x: 0.1
+#   max_vel_y: 0.0
+#   min_vel_y: 0.0
+#   max_vel_theta: 1.0
+#   min_vel_theta: -1.0
+#   min_in_place_vel_theta: 0.4
+#   escape_vel: -0.1
+#   sim_time: 1.0
+#   angular_sim_granularity: 0.1
+#   sim_granularity: 0.025
+#   vx_samples: 20
+#   vy_samples: 0
+#   vtheta_samples: 40
+#   penalize_negative_x: true
+#   heading_lookahead: 0.5
+#   oscillation_reset_dist: 0.01
+#   escape_reset_dist: 0.1
+#   escape_reset_theta: 0.1
+
+# Recovery Behaviors
+recovery_behaviors:
+  - name: conservative_reset
+    type: clear_costmap_recovery/ClearCostmapRecovery
+  - name: aggressive_reset
+    type: clear_costmap_recovery/ClearCostmapRecovery

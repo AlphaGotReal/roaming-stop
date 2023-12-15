@@ -120,7 +120,7 @@ class filter_vel():
             safe_vel = self.generate_filtered_velocity(self.velocity)
             self.safe_vel_pub.publish(safe_vel)
 
-            print(safe_vel.linear.x, safe_vel.angular.z, self.roam_signal)
+            #print(safe_vel.linear.x, safe_vel.angular.z, self.roam_signal)
 
             rate.sleep()
 

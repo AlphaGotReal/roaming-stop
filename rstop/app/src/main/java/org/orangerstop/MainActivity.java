@@ -11,7 +11,7 @@ import java.net.*;
 
 public class MainActivity extends AppCompatActivity {
 
-    public final String ip = "192.168.168.32";
+    public final String ip = "192.168.24.32";
     public final int port = 6969;
 
     public boolean clicked = false;

@@ -1,8 +1,0 @@
-prefix=/home/straw/Documents/roaming_stop/devel/.private/rstop
-
-Name: rstop
-Description: Description of rstop
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 
